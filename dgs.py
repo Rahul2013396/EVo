@@ -157,8 +157,8 @@ def main(f_chem, f_env, f_out):
             run.FIND_SATURATION is True or run.ATOMIC_MASS_SET is True
         ) and sys.sat_conditions[0] < run.P_STOP:
             exit(
-                f"Error: The saturation pressure ({sys.sat_conditions[0]:.3} bar) is "
-                f"lower than P_STOP ({run.P_STOP:.3} bar).\n"
+                f"Error: The saturation pressure ({sys.sat_conditions[0]} bar) is "
+                f"lower than P_STOP ({run.P_STOP} bar).\n"
                 "Please either lower P_STOP or change the melt initial fo2/melt "
                 "volatile content.\n"
                 "Exiting..."

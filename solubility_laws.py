@@ -621,7 +621,59 @@ def libourel2003(mN2, fO2, P):
         + 5.97e-16 * fO2**-0.75 * (P * 0.986923 * mN2) ** 0.5
     )
 
+'''
+def libourel2003_fugacity(n_melt, nY, fO2, P):
+    """
+    Returns the fugacity of N2 in the gas phase.
 
+    Parameters
+    ----------
+    n_melt : float
+        Weight fraction of N2 in the melt
+    nY : float
+        Fugacity coefficient of N2
+    fO2 : float
+        Oxygen fugacity
+    P : float
+        Pressure (bars)
+
+    Returns
+    -------
+    fn2 : float
+        The fugacity of N2
+
+    References
+    ----------
+    Libourel, G., Marty, B., and Humbert, F. (2003) Nitrogen solubility
+    in basaltic melt. Part I. Effect of oxygen fugacity. GCA.
+    """
+
+    def n_quadratic(n_melt):
+        a = 0.0611e-6
+        b = 5.97e-16
+
+        def f0(x):
+            print(a * x + b * ((fO2) ** (-0.75)) * (x**0.5) - n_melt)
+            return a * x + b * ((fO2) ** (-0.75)) * (x**0.5) - n_melt
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                PN2 = fsolve(f0, 1)[0]
+            except RuntimeWarning:
+                try:
+                    PN2 = fsolve(f0, 1e-10)[0]
+                except RuntimeWarning:
+                    raise RuntimeError("Failed to find N2 partial pressure.")
+
+        return PN2
+    print(f'nmelt = {n_melt}')
+    PN2 = n_quadratic(n_melt)
+    mN2 = PN2 / (P * 0.986923)  # pressure in atmospheres
+    fn2 = nY * mN2 * P
+
+    return fn2
+'''
 def libourel2003_fugacity(n_melt, nY, fO2, P):
     """
     Returns the fugacity of N2 in the gas phase.
@@ -660,13 +712,23 @@ def libourel2003_fugacity(n_melt, nY, fO2, P):
             try:
                 PN2 = fsolve(f0, 1)[0]
             except RuntimeWarning:
-                try:
-                    PN2 = fsolve(f0, 1e-10)[0]
-                except RuntimeWarning:
-                    raise RuntimeError("Failed to find N2 partial pressure.")
+                tol=1e-10
+                flag=0
+                while(flag !=1):
+                    if (tol >=1e-17):
+                        try:
+                            PN2 = fsolve(f0, tol)[0]
+                            flag=1
+                        except RuntimeWarning:
+                            tol/=10
+                    else:
+                        try:
+                            PN2 = fsolve(f0, tol)[0]
+                            flag=1
+                        except RuntimeWarning:
+                            raise RuntimeError("Failed to find N2 partial pressure.")
 
         return PN2
-
     PN2 = n_quadratic(n_melt)
     mN2 = PN2 / (P * 0.986923)  # pressure in atmospheres
     fn2 = nY * mN2 * P

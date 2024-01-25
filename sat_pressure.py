@@ -22,6 +22,7 @@ import messages as msgs
 import re
 import numpy as np
 import warnings
+import sys
 
 
 def get_molfrac(P, fugacities, gamma):
@@ -341,7 +342,9 @@ def sat_pressure(run, sys, gas, melt, mols):
 
     # store the saturation pressure
     P_sat = float(re.sub("[\[\]]", "", np.array_str(P_sat)))  # noqa:W605
+    print(f'Psat = {P_sat}')
     sys.P = P_sat
+    #sys.exit()
     gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
     fugacities = get_f(P_sat, sys, melt, gamma)
 

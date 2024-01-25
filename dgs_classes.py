@@ -20,7 +20,7 @@ import solvgas as sg
 import init_cons as ic
 import messages as msgs
 import solubility_laws as sl
-
+import sys
 
 # ------------------------------------------------------------------------
 # CLASSES
@@ -140,6 +140,7 @@ class RunDef:
         self.RUN_TYPE = (
             "closed"  # Select the run type from closed system, open system or gas only.
         )
+        self.FILE_NAME = 'out'
         self.SINGLE_STEP = False  # Specifies single pressure or full decompression
         self.FIND_SATURATION = (
             False  # Search for the saturation point; ignores P_Start and WgT
@@ -635,12 +636,32 @@ class ThermoSystem:
         if melt.graphite_sat is True:
             melt.graph_current = melt.graphite[-1]
 
+        del melt.rho_store[-1]
+        print(f'p = {self.P_step / 10}')
         if self.P_step / 10 >= self.run.DP_MIN:
             del self.P_track[-1]
             self.P = self.P + self.P_step
             self.P_step = self.P_step / 10
             print("mass conservation reset")
+            '''
+            gas.mH2O[-1] = gas.mH2O[0]
+            gas.mH2[-1] = gas.mH2[0]
+            gas.mCO2[-1] = gas.mCO2[0]
+            gas.mCO[-1] = gas.mCO[0]
+            gas.mCH4[-1] = gas.mCH4[0]
+            gas.mS2[-1] = gas.mS2[0]
+            gas.mSO2[-1] = gas.mSO2[0]
+            gas.mH2S[-1] = gas.mH2S[0]
+            gas.mN2[-1] = gas.mN2[0]
+            '''
         else:
+            '''
+            del self.P_track[-1]
+            self.P = self.P + self.P_step
+            self.P_step = self.P_step / 10
+            print("mass conservation reset")
+            self.run.DP_MIN = self.run.DP_MIN/10
+            '''
             del self.P_track[-1]
             msgs.closed_earlyexit(self, gas, melt)
             exit(
@@ -648,6 +669,8 @@ class ThermoSystem:
                 "Please reduce the minimum pressure stepsize and try again."
                 "\nExiting..."
             )
+            
+            
 
     def pressure_step(self):
         """Reduces the pressure step size by x10 as it approaches `P_STOP`"""
@@ -1448,7 +1471,7 @@ class Melt:
             self.n.append(0.0)
 
         self.cm_volatiles, self.cm_density = self.melt_dicts()
-
+        
         self.rho_store.append(self.rho())  # Saves the melt density at each step
 
         if self.sys.run.S_SAT_WARN is True and self.run.GAS_SYS in [
@@ -1726,11 +1749,37 @@ class Gas:
                     )
                     - melt.graph_current
                 )
-                / (self.mCO[-1] + self.mCO2[-1] + self.mCH4[-1])
+                / (self.mCO[-1]  + self.mCO2[-1] + self.mCH4[-1])
             ) * sum(mjMj)
-
+        print(f'sum = {sum(mjMj)}')
+        print((
+                    self.sys.atomicM["c"] / cnst.m["c"]
+                    - sl.co2_melt(
+                        (CO2.Y * self.mCO2[-1] * self.sys.P),
+                        CO2,
+                        (O2.Y * self.mO2[-1] * self.sys.P),
+                        self.sys.T,
+                        self.sys.P,
+                        melt,
+                        name=self.sys.run.C_MODEL,
+                    )
+                    - sl.co_melt(
+                        (CO.Y * self.mCO[-1] * self.sys.P),
+                        self.sys.P,
+                        name=self.sys.run.CO_MODEL,
+                    )
+                    - sl.ch4_melt(
+                        (CH4.Y * self.mCH4[-1] * self.sys.P),
+                        self.sys.P,
+                        name=self.sys.run.CH4_MODEL,
+                    )
+                    
+                )
+                )
+        
         if wgt < 0.0:
             raise ValueError("Gas weight fraction is negative.")
+            #return -wgt
         else:
             return wgt
 
@@ -2070,6 +2119,7 @@ class Output:
         If True, the gas volume fraction will be plotted against pressure
     Plt_fo2_dFMQ : bool
         If True, fO2 relative to FMQ will be plotted against pressure
+
     """
 
     n_par = int(5)

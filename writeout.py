@@ -28,7 +28,6 @@ def get_data(sys, gas, melt, P):
     """
 
     fo2_buffer = sys.run.FO2_buffer
-
     data = {
         "P": P,
         fo2_buffer: [
@@ -137,16 +136,17 @@ def writeout_file(sys, gas, melt, P, crashed=False):
     """
 
     data = get_data(sys, gas, melt, P)
+    #for key, value in data.items() :
+    #    print (key)
+    #    print(len(value))
 
     df = pd.DataFrame(data)
 
     if not os.path.exists("Output"):
         os.makedirs("Output")
-
     if not crashed:
         file_name = (
-            f"dgs_output_{sys.run.COMPOSITION}_{sys.run.GAS_SYS}_{sys.run.RUN_TYPE}"
-            f"_{sys.T:.0f}K.csv"
+            f"{sys.run.FILE_NAME}.csv"
         )
     else:
         file_name = (
@@ -200,7 +200,6 @@ def writeout_figs(sys, melt, gas, out, P):
     filelist = glob.glob("Output/*.png")
     # Removes previous files so if output specification is changed
     # there is no confusion as to up to date files.
-
     for file in filelist:
         os.remove(file)
     if (
