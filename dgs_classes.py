@@ -21,6 +21,7 @@ import init_cons as ic
 import messages as msgs
 import solubility_laws as sl
 import sys
+import pdb
 
 # ------------------------------------------------------------------------
 # CLASSES
@@ -230,14 +231,14 @@ class RunDef:
         # Check for valid parameters
 
         if self.OCS is True:
-            exit("Error: OCS functionality has not been released yet. Sorry!")
+            sys.exit("Error: OCS functionality has not been released yet. Sorry!")
 
         if (
             self.COMPOSITION.lower() != "basalt"
             and self.COMPOSITION.lower() != "phonolite"
             and self.COMPOSITION.lower() != "rhyolite"
         ):
-            exit(
+            sys.exit(
                 f"Error: The composition '{self.COMPOSITION}' is invalid. "
                 "Please enter 'basalt', 'phonolite', or 'rhyolite'."
             )
@@ -247,7 +248,7 @@ class RunDef:
         if self.RUN_TYPE.lower() == "closed" or self.RUN_TYPE.lower() == "open":
             self.RUN_TYPE == self.RUN_TYPE.lower()
         else:
-            exit(
+            sys.exit(
                 f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. "
                 "Please select either 'closed' or 'open'; "
                 "gas-only is not available in this release."
@@ -418,7 +419,7 @@ class ThermoSystem:
             ic.cohs(self, run, melt, gas, mols)
         elif run.GAS_SYS == "COHSN":
             ic.cohsn(self, run, melt, gas, mols)
-
+    
     def norm_with_gas(self, melt):  # for iron equilibration.
         """
         Normalises the melt with the gas phase ready to equilibrate the oxygen.
@@ -664,7 +665,7 @@ class ThermoSystem:
             '''
             del self.P_track[-1]
             msgs.closed_earlyexit(self, gas, melt)
-            exit(
+            sys.exit(
                 "Error: Mass is no longer being conserved. "
                 "Please reduce the minimum pressure stepsize and try again."
                 "\nExiting..."
@@ -1777,12 +1778,13 @@ class Gas:
                 )
                 )
         
-        if wgt < 0.0:
-            raise ValueError("Gas weight fraction is negative.")
-            #return -wgt
-        else:
-            return wgt
-
+        # if wgt < 0.0: %Ranjan edit
+        #     pdb.set_trace()
+        #     raise ValueError("Gas weight fraction is negative.")
+        #     #return -wgt
+        # else:
+        #     return wgt
+        return wgt
     def get_vol_frac(self, melt):
         """
         Returns the gas volume fraction of the system.

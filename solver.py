@@ -9,6 +9,7 @@ import numpy as np
 import warnings
 import messages as msgs
 import solubility_laws as sl
+import pdb
 
 
 def decompress(run, sys, melt, gas, system):
@@ -583,6 +584,7 @@ def decompress(run, sys, melt, gas, system):
             (sys.atomicM["n"] / cnst.m["n"])
             - sl.n_melt(w, (O2.Y * z * sys.P), sys.P, name=run.N_MODEL)
         ) / (2 * w)
+        
 
         if fe is True:
             ofe = sys.fe_equil(melt, z, O2) / cnst.m["o"]
@@ -1049,10 +1051,11 @@ def decompress(run, sys, melt, gas, system):
                         elif melt.graphite_sat is False:
                             newguess = optimize.root(
                                 cohsn_new_eqs,
-                                [guessw, guessx, guessy, guessz,guessl,guessm,guessn,guesso,guessp,guessq], method='hybr',
-                                args=(run.FE_SYSTEM, melt.graphite_sat)
+                                [guessw, guessx, guessy, guessz,guessl,guessm,guessn,guesso,guessp,guessq], method='lm',
+                                args=(run.FE_SYSTEM, melt.graphite_sat), options={'maxiter':500000, 'xtol':5.0E-16, 'ftol':5.0E-16}
                             )
                             guesses = newguess['x']
+                            # pdb.set_trace()
                             return guesses[0], guesses[1], guesses[2], guesses[3], guesses[4],guesses[5], guesses[6], guesses[7], guesses[8], guesses[9]
 
 
@@ -1790,24 +1793,17 @@ def decompress(run, sys, melt, gas, system):
             o = "o"
         
         for x in ["h", "c", o, "s", "n"]:
-            print((
-                abs(
-                    cnvs.atomicM_calc(sys, melt, gas, x, -1, WgT=sys.WgT[-1])
-                    - sys.atomicM[x]
-                )
-                / sys.atomicM[x]
-            ) * 100)
+            # print((
+            #     abs(
+            #         cnvs.atomicM_calc(sys, melt, gas, x, -1, WgT=sys.WgT[-1])
+            #         - sys.atomicM[x]
+            #     )
+            #     / sys.atomicM[x]
+            # ) * 100)
             
-            if (
-                abs(
-                    cnvs.atomicM_calc(sys, melt, gas, x, -1, WgT=sys.WgT[-1])
-                    - sys.atomicM[x]
-                )
-                / sys.atomicM[x]
-            ) * 100 > 1e-5 and cnvs.atomicM_calc(
-                sys, melt, gas, x, -1, WgT=sys.WgT[-1]
-            ) != 0.0:
-                print(x)
+            if (abs(cnvs.atomicM_calc(sys, melt, gas, x, -1, WgT=sys.WgT[-1]) - sys.atomicM[x])/sys.atomicM[x]) * 100 > 1e-0 and cnvs.atomicM_calc(sys, melt, gas, x, -1, WgT=sys.WgT[-1]) != 0.0:
+                # print(x)
+                pdb.set_trace()
                 sys.mass_conservation_reset(melt, gas)
                 break
         

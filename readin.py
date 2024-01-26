@@ -16,6 +16,7 @@ import solvgas as sg
 import messages as msgs
 import sat_pressure as sat
 import fixed_weights as fw
+import pdb
 
 # ------------------------------------------------------------------------
 # FUNCTION DEFINTIONS
@@ -393,7 +394,7 @@ def set_init_chem(run, sys, melt):
         sys.get_atomic_mass(
             run, gas, melt, molecules
         )  # Gets atomic mass values and initial partitioning
-
+    
     # Normalises the wt % fractions of oxides in the melt with the volatile species
     # and FeO(t).
     sys.norm_with_gas(melt)
