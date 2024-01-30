@@ -662,21 +662,33 @@ def decompress(run, sys, melt, gas, system):
                 (
                     1 - z - mCO2 - x - mSO2 - y - w -mH2 -mCH4 -mH2O - mH2S
                 ),
-                (
-                    mCO2 - ((sys.K["K2"] * CO.Y * x * (O2.Y * z * sys.P) ** 0.5) / CO2.Y)
-                ),
-                (
-                    mSO2 - ((sys.K["K5"] * O2.Y * z * (S2.Y * y * sys.P) ** 0.5) / SO2.Y)
-                ),
-                (
-                    mH2S - ((sys.K["K4"] * H2O.Y * mH2O * (S2.Y * y) ** 0.5) / (H2S.Y * (O2.Y * z) ** 0.5))
-                ),
-                (
-                    mH2 - ((H2O.Y * mH2O) / (sys.K["K1"] * H2.Y * (O2.Y * z * sys.P) ** 0.5))
-                ),
-                (
-                    mCH4 - ((CO2.Y * mCO2 * (H2O.Y * mH2O) ** 2) / (sys.K["K3"] * CH4.Y * (O2.Y * z) ** 2))
-                ),
+                # (
+                #     mCO2 - ((sys.K["K2"] * CO.Y * x * (O2.Y * z * sys.P) ** 0.5) / CO2.Y)
+                # ),
+                # (
+                #     mSO2 - ((sys.K["K5"] * O2.Y * z * (S2.Y * y * sys.P) ** 0.5) / SO2.Y)
+                # ),
+                # (
+                #     mH2S - ((sys.K["K4"] * H2O.Y * mH2O * (S2.Y * y) ** 0.5) / (H2S.Y * (O2.Y * z) ** 0.5))
+                # ),
+                # (
+                #     mH2 - ((H2O.Y * mH2O) / (sys.K["K1"] * H2.Y * (O2.Y * z * sys.P) ** 0.5))
+                # ),
+                # (
+                #     mCH4 - ((CO2.Y * mCO2 * (H2O.Y * mH2O) ** 2) / (sys.K["K3"] * CH4.Y * (O2.Y * z) ** 2))
+                # ),
+                (1 + (-np.log(mCO2*CO2.Y) + np.log(x*CO.Y)+np.log(z*O2.Y*sys.P)/2)/np.log(sys.K['K2'])),
+
+                (1 + (-np.log(mSO2*SO2.Y) + np.log(z*O2.Y)+np.log(y*S2.Y*sys.P)/2)/np.log(sys.K['K5'])),
+
+                (1+ (-np.log(y*S2.Y)/2 - np.log(l*H2O.Y) + np.log(z*O2.Y)/2 + np.log(mH2S*H2S.Y))/np.log(sys.K['K4'])),
+
+                (1+ (-np.log(l*H2O.Y) + np.log(mH2*H2.Y) + np.log(z*O2.Y*sys.P)/2)/np.log(sys.K['K1'])),
+
+                (1+(-np.log(mCO2*CO2.Y) - 2*np.log(l*H2O.Y) + np.log(mCH4*CH4.Y) + 2*np.log(z*O2.Y))/np.log(sys.K['K3'])),
+
+
+
                 (
                    (( N * (2 * z + 2 * mSO2 + l + x + 2 * mCO2)
                     + sl.h2o_melt(l, H2O, sys.P, name=run.H2O_MODEL)
@@ -1057,7 +1069,7 @@ def decompress(run, sys, melt, gas, system):
                         elif melt.graphite_sat is False:
                             newguess = optimize.root(
                                 cohsn_new_eqs,
-                                [guessw, guessx, guessy, guessz,guessl,guessm,guessn,guesso,guessp,guessq], method='lm', options={'maxiter':500000, 'xtol':5.0E-16, 'ftol':5.0E-16},
+                                [guessw, guessx, guessy, guessz,guessl,guessm,guessn,guesso,guessp,guessq], method='lm', options={'maxiter':500000, 'xtol':5.0E-12, 'ftol':5.0E-12},
                                 args=(run.FE_SYSTEM, melt.graphite_sat)
                             )
                             
