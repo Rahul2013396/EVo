@@ -637,12 +637,10 @@ class ThermoSystem:
             melt.graph_current = melt.graphite[-1]
 
         del melt.rho_store[-1]
-        print(f'p = {self.P_step / 10}')
         if self.P_step / 10 >= self.run.DP_MIN:
             del self.P_track[-1]
             self.P = self.P + self.P_step
             self.P_step = self.P_step / 10
-            print("mass conservation reset")
             '''
             gas.mH2O[-1] = gas.mH2O[0]
             gas.mH2[-1] = gas.mH2[0]
@@ -1751,31 +1749,8 @@ class Gas:
                 )
                 / (self.mCO[-1]  + self.mCO2[-1] + self.mCH4[-1])
             ) * sum(mjMj)
-        print(f'sum = {sum(mjMj)}')
-        print((
-                    self.sys.atomicM["c"] / cnst.m["c"]
-                    - sl.co2_melt(
-                        (CO2.Y * self.mCO2[-1] * self.sys.P),
-                        CO2,
-                        (O2.Y * self.mO2[-1] * self.sys.P),
-                        self.sys.T,
-                        self.sys.P,
-                        melt,
-                        name=self.sys.run.C_MODEL,
-                    )
-                    - sl.co_melt(
-                        (CO.Y * self.mCO[-1] * self.sys.P),
-                        self.sys.P,
-                        name=self.sys.run.CO_MODEL,
-                    )
-                    - sl.ch4_melt(
-                        (CH4.Y * self.mCH4[-1] * self.sys.P),
-                        self.sys.P,
-                        name=self.sys.run.CH4_MODEL,
-                    )
-                    
-                )
-                )
+        
+        
         
         if wgt < 0.0:
             raise ValueError("Gas weight fraction is negative.")

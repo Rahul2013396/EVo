@@ -9,7 +9,7 @@ import numpy as np
 import warnings
 import messages as msgs
 import solubility_laws as sl
-
+import pdb
 
 def decompress(run, sys, melt, gas, system):
     """
@@ -649,7 +649,15 @@ def decompress(run, sys, melt, gas, system):
         elif graph is False:
             melt.graph_current = 0.0
             
-            
+            # print((N * (l + mH2 + mH2S + 2 * mCH4)
+            #         + sl.h2_melt(mH2, H2, sys.P, melt, name=run.H2_MODEL)
+            #         + sl.h2o_melt(l, H2O, sys.P, name=run.H2O_MODEL)
+            #         + 2 * sl.ch4_melt((CH4.Y * mCH4 * sys.P), sys.P, name=run.CH4_MODEL)))
+            #print(sys.atomicM["h"] / (2 * cnst.m["h"]))
+            # print(N *mH2 + sl.h2_melt(mH2, H2, sys.P, melt, name=run.H2_MODEL))
+            # print(N * mCH4 + sl.ch4_melt((CH4.Y * mCH4 * sys.P), sys.P, name=run.CH4_MODEL))
+            # print(N * mH2S)
+
             return [
                 (
                     1 - z - mCO2 - x - mSO2 - y - w -mH2 -mCH4 -mH2O - mH2S
@@ -670,7 +678,7 @@ def decompress(run, sys, melt, gas, system):
                     mCH4 - ((CO2.Y * mCO2 * (H2O.Y * mH2O) ** 2) / (sys.K["K3"] * CH4.Y * (O2.Y * z) ** 2))
                 ),
                 (
-                    N * (2 * z + 2 * mSO2 + l + x + 2 * mCO2)
+                   (( N * (2 * z + 2 * mSO2 + l + x + 2 * mCO2)
                     + sl.h2o_melt(l, H2O, sys.P, name=run.H2O_MODEL)
                     + 2
                     * sl.co2_melt(
@@ -685,16 +693,16 @@ def decompress(run, sys, melt, gas, system):
                     + sl.co_melt((CO.Y * x * sys.P), sys.P, name=run.CO_MODEL)
                     + ofe
                 )
-                - (atomico / cnst.m["o"]),
+                - (atomico / cnst.m["o"]))/(atomico / cnst.m["o"])),
                 (
-                    N * (l + mH2 + mH2S + 2 * mCH4)
+                    ((N * (l + mH2 + mH2S + 2 * mCH4)
                     + sl.h2_melt(mH2, H2, sys.P, melt, name=run.H2_MODEL)
                     + sl.h2o_melt(l, H2O, sys.P, name=run.H2O_MODEL)
                     + 2 * sl.ch4_melt((CH4.Y * mCH4 * sys.P), sys.P, name=run.CH4_MODEL)
                 )
-                - (sys.atomicM["h"] / (2 * cnst.m["h"])),
+                - (sys.atomicM["h"] / (2 * cnst.m["h"])))/(sys.atomicM["h"] / (2 * cnst.m["h"]))),
                 (
-                    N * (mSO2 + mH2S + 2 * y)
+                    (N * (mSO2 + mH2S + 2 * y)
                     + sl.sulfide_melt(
                         (S2.Y * y * sys.P),
                         (O2.Y * z * sys.P),
@@ -712,10 +720,10 @@ def decompress(run, sys, melt, gas, system):
                         run,
                         name=run.SULFATE_CAPACITY,
                     )
-                )
-                - (sys.atomicM["s"] / cnst.m["s"]),
+                
+                - (sys.atomicM["s"] / cnst.m["s"]))/(sys.atomicM["s"] / cnst.m["s"])),
                 (
-                    N * (x + mCO2 + mCH4)
+                    (N * (x + mCO2 + mCH4)
                     + sl.co2_melt(
                         (CO2.Y * mCO2 * sys.P),
                         CO2,
@@ -727,8 +735,8 @@ def decompress(run, sys, melt, gas, system):
                     )
                     + sl.co_melt((CO.Y * x * sys.P), sys.P, name=run.CO_MODEL)
                     + sl.ch4_melt((CH4.Y * mCH4 * sys.P), sys.P, name=run.CH4_MODEL)
-                )
-                - (sys.atomicM["c"] / cnst.m["c"]),
+                
+                - (sys.atomicM["c"] / cnst.m["c"]))/(sys.atomicM["c"] / cnst.m["c"])),
             ]
         
     
@@ -1049,10 +1057,12 @@ def decompress(run, sys, melt, gas, system):
                         elif melt.graphite_sat is False:
                             newguess = optimize.root(
                                 cohsn_new_eqs,
-                                [guessw, guessx, guessy, guessz,guessl,guessm,guessn,guesso,guessp,guessq], method='hybr',
+                                [guessw, guessx, guessy, guessz,guessl,guessm,guessn,guesso,guessp,guessq], method='lm', options={'maxiter':500000, 'xtol':5.0E-16, 'ftol':5.0E-16},
                                 args=(run.FE_SYSTEM, melt.graphite_sat)
                             )
+                            
                             guesses = newguess['x']
+                            pdb.set_trace()
                             return guesses[0], guesses[1], guesses[2], guesses[3], guesses[4],guesses[5], guesses[6], guesses[7], guesses[8], guesses[9]
 
 
@@ -1281,7 +1291,7 @@ def decompress(run, sys, melt, gas, system):
                 gas.mN2[-1],
             ],
         )
-
+        
         sys.WgT.append(gas.get_WgT(melt, system))
         melt.melt_composition(gas, system)
         sys.GvF.append(gas.get_vol_frac(melt))
@@ -1781,7 +1791,6 @@ def decompress(run, sys, melt, gas, system):
                 N2=gas.mN2[-1],
             )
         )
-
         # Check mass is being conserved
 
         if run.FE_SYSTEM is True:
@@ -1789,14 +1798,14 @@ def decompress(run, sys, melt, gas, system):
         elif run.FE_SYSTEM is False:
             o = "o"
         
+        checkp =[] 
         for x in ["h", "c", o, "s", "n"]:
-            print((
-                abs(
+            checkp.append(abs(
                     cnvs.atomicM_calc(sys, melt, gas, x, -1, WgT=sys.WgT[-1])
                     - sys.atomicM[x]
                 )
-                / sys.atomicM[x]
-            ) * 100)
+                / sys.atomicM[x])
+            pdb.set_trace()
             
             if (
                 abs(
@@ -1807,7 +1816,7 @@ def decompress(run, sys, melt, gas, system):
             ) * 100 > 1e-5 and cnvs.atomicM_calc(
                 sys, melt, gas, x, -1, WgT=sys.WgT[-1]
             ) != 0.0:
-                print(x)
+                
                 sys.mass_conservation_reset(melt, gas)
                 break
         
@@ -1815,6 +1824,6 @@ def decompress(run, sys, melt, gas, system):
         # remove a fraction of the gas phase for the next step.
         if run.RUN_TYPE == "open":
             gas.open_system(melt, run.LOSS_FRAC)
-
+    
     else:
         print("There is no equation for this yet")

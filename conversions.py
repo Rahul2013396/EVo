@@ -590,6 +590,7 @@ def atomicM_calc(sys, melt, gas, element, i, WgT=None):
             if sys.run.FE_SYSTEM is False:
                 return 0
             else:
+                gas.Wt["H2O"]
                 return (
                     cnst.m["o"]
                     * (
@@ -602,6 +603,7 @@ def atomicM_calc(sys, melt, gas, element, i, WgT=None):
                 ) + melt.ofe[i]
 
         elif element == "h":
+            
             return (
                 2
                 * cnst.m["h"]
